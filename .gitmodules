@@ -1,0 +1,3 @@
+[submodule "ecommerce-project/ecommerce-project/03-frontend/angular-ecommerce"]
+	path = ecommerce-project/ecommerce-project/03-frontend/angular-ecommerce
+	url = git@github.com:hbao0421/hbgit.git
