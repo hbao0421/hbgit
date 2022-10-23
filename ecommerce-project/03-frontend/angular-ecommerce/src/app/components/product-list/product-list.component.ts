@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Product } from 'src/app/common/product';
 import { ProductService } from 'src/app/services/product.service';
 import {ActivatedRoute} from '@angular/router'
+import { CartItem } from 'src/app/common/cart-item';
+import { CartService } from 'src/app/services/cart.service';
 
 @Component({
   selector: 'app-product-list',
@@ -17,11 +19,14 @@ export class ProductListComponent implements OnInit {
   thePageNumber:number = 1;
   thePageSize:number= 5;
   theTotalElements:number = 0;
+
+  preiousKeyword: string = "";
   
 
 
 
   constructor(private productService:ProductService,
+              private cartService:CartService,
               private route:ActivatedRoute) { }
 
   ngOnInit(): void {
@@ -53,27 +58,38 @@ export class ProductListComponent implements OnInit {
     console.log(`currentCategoryId=${this.currentCategoryId},thePageNumber=${this.thePageNumber}`)
     this.productService.getProductListPaginate(this.thePageNumber-1,
                                                this.thePageSize,
-                                               this.currentCategoryId).subscribe(
-                                                data =>{
-                                                  this.products = data._embedded.products;
-                                                  this.thePageNumber = data.page.number+1;
-                                                  this.thePageSize = data.page.size;
-                                                  this.theTotalElements = data.page.totalElements;
-                                                }
-                                              );
+                                               this.currentCategoryId).subscribe(this.processResult());
   }
   handleSearchProducts(){
     const theKeyWord: string = this.route.snapshot.paramMap.get('keyword')!;
-    this.productService.searchProducts(theKeyWord).subscribe(
-      data =>{
-        this.products = data;
-      }
-    )
+    if(this.preiousKeyword!=theKeyWord){
+      this.thePageNumber = 1;
+    }
+    this.preiousKeyword = theKeyWord;
+    console.log(`keyWord=${theKeyWord},thePageNumber=${this.thePageNumber}`);
+    this.productService.SearchProductsPaginate(this.thePageNumber-1,
+                                      this.thePageSize,
+                                      theKeyWord).subscribe(this.processResult());
   }
   updatePageSize(pageSize:string){
     this.thePageSize = +pageSize;
     this.thePageNumber = 1;
     this.listProducts();
+  }
+
+  processResult(){
+    return (data:any) =>{
+      this.products = data._embedded.products;
+      this.thePageNumber = data.page.number+1;
+      this.thePageSize = data.page.size;
+      this.theTotalElements = data.page.totalElements;
+    }
+  }
+
+  addToCart(theProduct:Product){
+    console.log(`Adding to cart ${theProduct.name} ,${theProduct.unitPrice}`);
+    const theCartItem = new CartItem(theProduct);
+    this.cartService.addToCart(theCartItem);
   }
 }
   
