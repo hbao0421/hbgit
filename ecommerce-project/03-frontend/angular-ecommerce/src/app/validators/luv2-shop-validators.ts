@@ -6,7 +6,7 @@ export class Luv2ShopValidators {
         if((control.value!=null)&&(control.value.trim().length===0)){
             return {'notOnlyWhiteSpace':true};
         }else{
-            return {'pass':true};
+            return {};
         }
     }
 }
